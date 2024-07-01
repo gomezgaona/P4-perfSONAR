@@ -1,0 +1,82 @@
+{
+    "application": {
+        "dpctl": "",
+        "ipBase": "10.0.0.0/8",
+        "netflow": {
+            "nflowAddId": "0",
+            "nflowTarget": "",
+            "nflowTimeout": "600"
+        },
+        "openFlowVersions": {
+            "ovsOf10": "1",
+            "ovsOf11": "0",
+            "ovsOf12": "0",
+            "ovsOf13": "0",
+            "ovsOf14": "0"
+        },
+        "sflow": {
+            "sflowHeader": "128",
+            "sflowPolling": "30",
+            "sflowSampling": "400",
+            "sflowTarget": ""
+        },
+        "startCLI": "1",
+        "switchType": "ovs",
+        "terminalType": "xterm"
+    },
+    "controllers": [],
+    "hosts": [
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "cilab/lab7",
+                "hostname": "perfSONAR1",
+                "ip": "10.0.0.10/24",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "startCommand": "/sbin/init"
+            },
+            "x": "137.0",
+            "y": "186.0"
+        },
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "cilab/perfsonar2",
+                "hostname": "perfSONAR2",
+                "ip": "20.0.0.10/24",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "startCommand": "/sbin/init"
+            },
+            "x": "438.0",
+            "y": "185.0"
+        }
+    ],
+    "links": [
+        {
+            "dest": "r1",
+            "opts": {},
+            "src": "perfSONAR1"
+        },
+        {
+            "dest": "perfSONAR2",
+            "opts": {},
+            "src": "r1"
+        }
+    ],
+    "switches": [
+        {
+            "number": "0",
+            "opts": {
+                "controllers": [],
+                "hostname": "r1",
+                "nodeNum": 0,
+                "switchType": "legacyRouter"
+            },
+            "x": "280.0",
+            "y": "185.0"
+        }
+    ],
+    "version": "2"
+}

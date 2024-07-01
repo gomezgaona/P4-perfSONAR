@@ -1,0 +1,100 @@
+{
+    "application": {
+        "dpctl": "",
+        "ipBase": "10.0.0.0/8",
+        "netflow": {
+            "nflowAddId": "0",
+            "nflowTarget": "",
+            "nflowTimeout": "600"
+        },
+        "openFlowVersions": {
+            "ovsOf10": "1",
+            "ovsOf11": "0",
+            "ovsOf12": "0",
+            "ovsOf13": "0",
+            "ovsOf14": "0"
+        },
+        "sflow": {
+            "sflowHeader": "128",
+            "sflowPolling": "30",
+            "sflowSampling": "400",
+            "sflowTarget": ""
+        },
+        "startCLI": "1",
+        "switchType": "ovs",
+        "terminalType": "xterm"
+    },
+    "controllers": [],
+    "hosts": [
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "cilab/perfsonar2",
+                "hostname": "perfSONAR1",
+                "ip": "10.0.0.1",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "startCommand": "/usr/sbin/init"
+            },
+            "x": "70.0",
+            "y": "64.0"
+        },
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "cilab/perfsonar2",
+                "hostname": "perfSONAR2",
+                "ip": "10.0.0.2",
+                "nodeNum": 0,
+                "nodeType": "Docker",
+                "startCommand": "/usr/sbin/init"
+            },
+            "x": "462.0",
+            "y": "64.0"
+        },
+        {
+            "number": "1",
+            "opts": {
+                "hostname": "h1",
+                "nodeNum": 1,
+                "nodeType": "Host",
+                "sched": "host"
+            },
+            "x": "269.0",
+            "y": "203.0"
+        }
+    ],
+    "links": [
+        {
+            "dest": "s1",
+            "opts": {},
+            "src": "perfSONAR1"
+        },
+        {
+            "dest": "perfSONAR2",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "h1",
+            "opts": {},
+            "src": "s1"
+        }
+    ],
+    "switches": [
+        {
+            "number": "0",
+            "opts": {
+                "dimage": "bmv2",
+                "hostname": "s1",
+                "nodeNum": 0,
+                "nodeType": "Switch",
+                "sched": "host",
+                "startCommand": "/bin/bash"
+            },
+            "x": "270.0",
+            "y": "64.0"
+        }
+    ],
+    "version": "2"
+}
