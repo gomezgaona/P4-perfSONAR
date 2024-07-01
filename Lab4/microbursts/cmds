@@ -1,0 +1,11 @@
+mirroring_add 8 2
+
+8 is the session id
+2 is the output port number
+
+set_queue_rate 1000
+set_queue_depth 10000
+
+simple_switch -i 0@s1-eth0 -i 1@s1-eth2 -i 2@s1-eth1 basic.json 
+
+simple_switch_CLI < ~/lab11/rules.cmd

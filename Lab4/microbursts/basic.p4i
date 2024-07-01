@@ -897,18 +897,6 @@ typedef bit<9> egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
-typedef bit<5> tcp_flags_t;
-const tcp_flags_t TCP_FLAGS_F = 1;
-const tcp_flags_t TCP_FLAGS_S = 2;
-const tcp_flags_t TCP_FLAGS_R = 4;
-const tcp_flags_t TCP_FLAGS_P = 8;
-const tcp_flags_t TCP_FLAGS_A = 16;
-
-
-
-
-
-
 header ethernet_t {
     macAddr_t dstAddr;
     macAddr_t srcAddr;
@@ -944,24 +932,19 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
-header report_t {
-    bit<32> rtt;
+header queue_t {
+    bit<48> queue;
 }
 
 struct metadata {
-    @field_list(0)
-    bit<32> rtt_sample;
-    bit<16> flow_id;
-    bool pkt_type;
-    bit<32> expected_ack;
-    bit<32> pkt_signature;
+
 }
 
 struct headers {
     ethernet_t ethernet;
     ipv4_t ipv4;
     tcp_t tcp;
-    report_t report;
+    queue_t queue;
 }
 # 2 "parser.p4" 2
 /*************************************************************************
@@ -1068,118 +1051,12 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
-    action compute_flow_id() {
-        hash (
-            meta.flow_id,
-            HashAlgorithm.crc16,
-            (bit<1>)0,
-            {
-                hdr.ipv4.srcAddr,
-                hdr.ipv4.dstAddr,
-                hdr.ipv4.protocol,
-                hdr.tcp.srcPort,
-                hdr.tcp.dstPort
-            },
-            (bit<16>)65535
-        );
-    }
-
-    action mark_SEQ() {
-        meta.pkt_type = true;
-    }
-    action mark_ACK() {
-        meta.pkt_type = false;
-    }
-
-    table get_packet_type {
-        key = {
-            hdr.tcp.flags: ternary;
-            hdr.ipv4.totalLen: range;
-        }
-        actions = {
-            mark_SEQ;
-            mark_ACK;
-            drop;
-        }
-        default_action = mark_SEQ();
-        const entries = {
-            (TCP_FLAGS_S, _) : mark_SEQ();
-            (TCP_FLAGS_S + TCP_FLAGS_A, _) : mark_ACK();
-            (TCP_FLAGS_A, 0..80) : mark_ACK();
-            (TCP_FLAGS_A + TCP_FLAGS_P, 0..80) : mark_ACK();
-            (_,100..1600): mark_SEQ;
-            (TCP_FLAGS_R,_): drop();
-            (TCP_FLAGS_F,_): drop();
-        }
-    }
-
-
-
-    action compute_expected_ack() {
-        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>) hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
-        if(hdr.tcp.flags == TCP_FLAGS_S) {
-            meta.expected_ack = meta.expected_ack + 1;
-        }
-    }
-
-    action get_pkt_signature_SEQ() {
-        hash (
-            meta.pkt_signature,
-            HashAlgorithm.crc32,
-            (bit<1>)0,
-            {
-                hdr.ipv4.srcAddr,
-                hdr.ipv4.dstAddr,
-                hdr.tcp.srcPort,
-                hdr.tcp.dstPort,
-                meta.expected_ack
-            },
-            (bit<32>)1048576
-        );
-    }
-
-    action get_pkt_signature_ACK() {
-        hash (
-            meta.pkt_signature,
-            HashAlgorithm.crc32,
-            (bit<1>)0,
-            {
-                hdr.ipv4.dstAddr,
-                hdr.ipv4.srcAddr,
-                hdr.tcp.dstPort,
-                hdr.tcp.srcPort,
-                hdr.tcp.ackNo
-            },
-            (bit<32>)1048576
-        );
-    }
-
-
-    register<bit<32>>(1048576) last_timestamp_reg;
-
 
     apply {
 
         if(hdr.ipv4.isValid()) {
             forwarding.apply();
-            if(hdr.tcp.isValid()) {
-                compute_flow_id();
 
-                get_packet_type.apply();
-
-                if(meta.pkt_type == true) {
-                    compute_expected_ack();
-                    get_pkt_signature_SEQ();
-                    last_timestamp_reg.write((bit<32>)meta.pkt_signature, (bit<32>)standard_metadata.ingress_global_timestamp);
-                } else {
-                    get_pkt_signature_ACK();
-                    bit<32> extracted_ts;
-                    last_timestamp_reg.read(extracted_ts, (bit<32>)meta.pkt_signature);
-                    meta.rtt_sample = (bit<32>)standard_metadata.ingress_global_timestamp - extracted_ts;
-                    clone_preserving_field_list(CloneType.I2E, 5, 0);
-                }
-
-            }
         }
     }
 }
@@ -1193,21 +1070,27 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-
-
      apply {
-          if(standard_metadata.instance_type == 1) {
-
-               hdr.ethernet.etherType = 0x1234;
-
-               hdr.report.setValid();
-               hdr.report.rtt = meta.rtt_sample;
-
+          if(standard_metadata.instance_type != 2) {
+               clone_preserving_field_list(CloneType.E2E, 8, 0);
+          } else {
+               //hdr.ipv4.totalLen = 6; // 14 eth 20 IPv4 5 queue
+               //hdr.ethernet.setInvalid();
                hdr.ipv4.setInvalid();
                hdr.tcp.setInvalid();
 
-               truncate((bit<32>)18);
+               hdr.queue.setValid();
+               hdr.queue.queue = (bit<48>)standard_metadata.enq_qdepth;
+               truncate((bit<32>)20);
+          }/*
+          else {
+               hdr.ipv4.totalLen = 14 + 20 + 6; // 14 eth 20 IPv4 5 queue
+               hdr.tcp.setInvalid();
+               hdr.queue.setValid();
+               hdr.queue.queue = (bit<48>)standard_metadata.enq_qdepth;
+               truncate((bit<32>)hdr.ipv4.totalLen);
           }
+          */
 
      }
 }
@@ -1222,7 +1105,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
-        packet.emit(hdr.report);
+        packet.emit(hdr.queue);
 
     }
 }
