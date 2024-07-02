@@ -3,7 +3,7 @@
 # 1 "<command-line>"
 # 1 "basic.p4"
 /* -*- P4_16 -*- */
-# 1 "/usr/share/p4c/p4include/core.p4" 1
+# 1 "/home/admin/p4c/build/p4include/core.p4" 1
 /*
 Copyright 2013-present Barefoot Networks, Inc.
 
@@ -98,7 +98,7 @@ extern bool static_assert(bool check, string message);
 /// Like the above but using a default message.
 extern bool static_assert(bool check);
 # 3 "basic.p4" 2
-# 1 "/usr/share/p4c/p4include/v1model.p4" 1
+# 1 "/home/admin/p4c/build/p4include/v1model.p4" 1
 /*
 Copyright 2013-present Barefoot Networks, Inc.
 
@@ -141,7 +141,7 @@ limitations under the License.
 
 
 
-# 1 "/usr/share/p4c/p4include/core.p4" 1
+# 1 "/home/admin/p4c/build/p4include/core.p4" 1
 /*
 Copyright 2013-present Barefoot Networks, Inc.
 
@@ -159,7 +159,7 @@ limitations under the License.
 */
 
 /* This is the P4-16 core library, which declares some built-in P4 constructs using P4 */
-# 44 "/usr/share/p4c/p4include/v1model.p4" 2
+# 44 "/home/admin/p4c/build/p4include/v1model.p4" 2
 
 
 
@@ -1043,8 +1043,6 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
-
-
     action forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -1087,6 +1085,7 @@ control MyIngress(inout headers hdr,
     action mark_SEQ() {
         meta.pkt_type = true;
     }
+
     action mark_ACK() {
         meta.pkt_type = false;
     }
@@ -1113,10 +1112,8 @@ control MyIngress(inout headers hdr,
         }
     }
 
-
-
     action compute_expected_ack() {
-        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>) hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
+        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>)hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
         if(hdr.tcp.flags == TCP_FLAGS_S) {
             meta.expected_ack = meta.expected_ack + 1;
         }
@@ -1154,17 +1151,14 @@ control MyIngress(inout headers hdr,
         );
     }
 
-
     register<bit<32>>(1048576) last_timestamp_reg;
 
-
     apply {
-
         if(hdr.ipv4.isValid()) {
             forwarding.apply();
+
             if(hdr.tcp.isValid()) {
                 compute_flow_id();
-
                 get_packet_type.apply();
 
                 if(meta.pkt_type == true) {

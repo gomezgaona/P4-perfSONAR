@@ -6,8 +6,6 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     
-
-
     action forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -50,6 +48,7 @@ control MyIngress(inout headers hdr,
     action mark_SEQ() {
         meta.pkt_type = PKT_TYPE_SEQ;
     }
+
     action mark_ACK() {
         meta.pkt_type = PKT_TYPE_ACK;
     }
@@ -76,10 +75,8 @@ control MyIngress(inout headers hdr,
         }
     }
 
-
-
     action compute_expected_ack() {
-        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>) hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
+        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>)hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
         if(hdr.tcp.flags == TCP_FLAGS_S) {
             meta.expected_ack = meta.expected_ack + 1;
         }
@@ -117,17 +114,14 @@ control MyIngress(inout headers hdr,
         );
     }
 
-
     register<bit<32>>(1048576) last_timestamp_reg;
 
-
     apply {
-
         if(hdr.ipv4.isValid()) {
             forwarding.apply();
+            
             if(hdr.tcp.isValid()) {
                 compute_flow_id();
-
                 get_packet_type.apply();
 
                 if(meta.pkt_type == PKT_TYPE_SEQ) {
