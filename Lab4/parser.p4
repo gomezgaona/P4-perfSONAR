@@ -1,7 +1,4 @@
 #include "headers.p4"
-/*************************************************************************
-*********************** P A R S E R  ***********************************
-*************************************************************************/
 
 parser MyParser(packet_in packet,
                 out headers hdr,
@@ -11,7 +8,6 @@ parser MyParser(packet_in packet,
     state start {
         transition parse_ethernet;
     }
-
     state parse_ethernet {
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
@@ -19,7 +15,6 @@ parser MyParser(packet_in packet,
             default: accept;
         }
     }
-
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
@@ -31,5 +26,4 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.tcp);
         transition accept;
     }
-
 }

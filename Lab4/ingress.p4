@@ -5,7 +5,10 @@
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-    
+                    
+    /************************************************************************
+    ***********************FORWARDING ACTIONS AND TABLES*********************
+    *************************************************************************/
     action forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -29,6 +32,9 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
+    /************************************************************************
+    ****************RTT COMPUTATION ACTIONS AND TABLES***********************
+    *************************************************************************/
     action compute_flow_id() {
         hash (
             meta.flow_id,
@@ -116,6 +122,9 @@ control MyIngress(inout headers hdr,
 
     register<bit<32>>(1048576) last_timestamp_reg;
 
+    /************************************************************************
+    **************************INGRESS PIPELINE LOGIC*************************
+    *************************************************************************/
     apply {
         if(hdr.ipv4.isValid()) {
             forwarding.apply();

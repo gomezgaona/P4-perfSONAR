@@ -27,32 +27,6 @@
     "controllers": [],
     "hosts": [
         {
-            "number": "0",
-            "opts": {
-                "dimage": "cilab/perfsonar2",
-                "hostname": "perfSONAR1",
-                "ip": "10.0.0.1",
-                "nodeNum": 0,
-                "nodeType": "Docker",
-                "startCommand": "/usr/sbin/init"
-            },
-            "x": "70.0",
-            "y": "64.0"
-        },
-        {
-            "number": "0",
-            "opts": {
-                "dimage": "cilab/perfsonar2",
-                "hostname": "perfSONAR2",
-                "ip": "10.0.0.2",
-                "nodeNum": 0,
-                "nodeType": "Docker",
-                "startCommand": "/usr/sbin/init"
-            },
-            "x": "462.0",
-            "y": "64.0"
-        },
-        {
             "number": "1",
             "opts": {
                 "hostname": "h1",
@@ -60,23 +34,45 @@
                 "nodeType": "Host",
                 "sched": "host"
             },
-            "x": "269.0",
-            "y": "203.0"
+            "x": "76.0",
+            "y": "79.0"
+        },
+        {
+            "number": "2",
+            "opts": {
+                "hostname": "h2",
+                "nodeNum": 2,
+                "nodeType": "Host",
+                "sched": "host"
+            },
+            "x": "450.0",
+            "y": "78.0"
+        },
+        {
+            "number": "3",
+            "opts": {
+                "hostname": "h3",
+                "nodeNum": 3,
+                "nodeType": "Host",
+                "sched": "host"
+            },
+            "x": "266.0",
+            "y": "247.0"
         }
     ],
     "links": [
         {
             "dest": "s1",
             "opts": {},
-            "src": "perfSONAR1"
+            "src": "h1"
         },
         {
-            "dest": "perfSONAR2",
+            "dest": "h2",
             "opts": {},
             "src": "s1"
         },
         {
-            "dest": "h1",
+            "dest": "h3",
             "opts": {},
             "src": "s1"
         }
@@ -92,8 +88,8 @@
                 "sched": "host",
                 "startCommand": "/bin/bash"
             },
-            "x": "270.0",
-            "y": "64.0"
+            "x": "267.0",
+            "y": "79.0"
         }
     ],
     "version": "2"

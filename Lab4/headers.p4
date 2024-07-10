@@ -1,10 +1,6 @@
 const bit<16> TYPE_IPV4 = 0x0800;
 const bit<8> TYPE_TCP = 6;
 
-/*************************************************************************
-*********************** H E A D E R S  ***********************************
-*************************************************************************/
-
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
@@ -18,8 +14,6 @@ const tcp_flags_t TCP_FLAGS_A = 16;
 
 #define PKT_TYPE_SEQ true
 #define PKT_TYPE_ACK false
-
-
 
 header ethernet_t {
     macAddr_t dstAddr;

@@ -7,11 +7,4 @@
 #include "egress.p4"
 #include "deparser.p4"
 
-V1Switch(
-MyParser(),
-MyVerifyChecksum(),
-MyIngress(),
-MyEgress(),
-MyComputeChecksum(),
-MyDeparser()
-) main;
+/*Define below the switch instance*/
