@@ -8,3 +8,11 @@
 #include "deparser.p4"
 
 /*Define below the switch instance*/
+V1Switch(
+MyParser(),
+MyVerifyChecksum(),
+MyIngress(),
+MyEgress(),
+MyComputeChecksum(),
+MyDeparser()
+) main;

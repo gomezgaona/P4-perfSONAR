@@ -82,7 +82,8 @@ control MyIngress(inout headers hdr,
     }
 
     action compute_expected_ack() {
-        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - (((bit<16>)hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
+        meta.expected_ack = hdr.tcp.seqNo + ((bit<32>)(hdr.ipv4.totalLen - 
+            (((bit<16>)hdr.ipv4.ihl + ((bit<16>)hdr.tcp.dataOffset)) * 16w4)));
         if(hdr.tcp.flags == TCP_FLAGS_S) {
             meta.expected_ack = meta.expected_ack + 1;
         }
@@ -136,12 +137,14 @@ control MyIngress(inout headers hdr,
                 if(meta.pkt_type == PKT_TYPE_SEQ) {
                     compute_expected_ack();
                     get_pkt_signature_SEQ();
-                    last_timestamp_reg.write((bit<32>)meta.pkt_signature, (bit<32>)standard_metadata.ingress_global_timestamp);
+                    last_timestamp_reg.write((bit<32>)meta.pkt_signature,
+                    (bit<32>)standard_metadata.ingress_global_timestamp);
                 } else {
                     get_pkt_signature_ACK();
                     bit<32> extracted_ts;
                     last_timestamp_reg.read(extracted_ts, (bit<32>)meta.pkt_signature);
-                    meta.rtt_sample = (bit<32>)standard_metadata.ingress_global_timestamp - extracted_ts;
+                    meta.rtt_sample = (bit<32>)standard_metadata.ingress_global_timestamp 
+                        - extracted_ts;
                     clone_preserving_field_list(CloneType.I2E, 5, 0);
                 }
 
